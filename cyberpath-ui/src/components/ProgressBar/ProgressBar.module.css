@@ -1,0 +1,7 @@
+.track { width: 100%; background: var(--color-surface-3); border-radius: var(--radius-pill); overflow: hidden; }
+.md { height: 8px; }
+.sm { height: 5px; }
+.fill { height: 100%; border-radius: inherit; transition: width 400ms ease; }
+.accent { background: linear-gradient(90deg, var(--color-accent-strong), var(--color-accent)); box-shadow: 0 0 12px rgba(46, 230, 166, 0.4); }
+.info { background: var(--color-info); }
+.warn { background: var(--color-warn); }

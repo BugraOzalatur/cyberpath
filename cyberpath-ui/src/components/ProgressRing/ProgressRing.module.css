@@ -1,0 +1,7 @@
+.ring { position: relative; flex-shrink: 0; }
+.ring svg { transform: rotate(-90deg); }
+.track { fill: none; stroke: var(--color-surface-3); }
+.value { fill: none; stroke: var(--color-accent); stroke-linecap: round; transition: stroke-dashoffset 600ms ease; filter: drop-shadow(0 0 6px rgba(46, 230, 166, 0.5)); }
+.center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.number { font-size: 26px; font-weight: 700; font-family: var(--font-mono); }
+.label { font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.08em; }

@@ -1,0 +1,41 @@
+# Build outputs
+.gradle/
+build/
+dist/
+out/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+pnpm-debug.log*
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+
+# Claude / AI assistant files
+CLAUDE.md
+CLAUDE.local.md
+**/CLAUDE.md
+**/CLAUDE.local.md
+.claude/
+**/.claude/
+.mcp.json
+**/.mcp.json

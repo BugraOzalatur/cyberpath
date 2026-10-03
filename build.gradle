@@ -1,0 +1,32 @@
+// Root project: builds cyberpath-api (Spring Boot), cyberpath-ui (React/Vite) and cyberpath-mcp (MCP server).
+//   ./gradlew build                     → build all modules + tests/lint
+//   ./gradlew clean dockerBuild -x test → build, create Docker images, start the services
+//   ./gradlew dockerDown                → stop the services (data is kept)
+
+tasks.register('dockerBuild', Exec) {
+    group = 'docker'
+    description = 'Builds all modules, creates the Docker images and starts the services, waiting until they are healthy.'
+    dependsOn ':cyberpath-api:build', ':cyberpath-ui:build', ':cyberpath-mcp:build'
+    commandLine 'docker', 'compose', 'up', '-d', '--build', '--wait'
+    def envFile = file('.env')
+    doFirst {
+        if (!envFile.exists()) {
+            throw new GradleException('Missing .env file. Run "cp .env.example .env" and set DB_PASSWORD.')
+        }
+    }
+    doLast {
+        logger.lifecycle('CyberPath is ready → UI: http://127.0.0.1:5180  API: http://127.0.0.1:8095/api')
+    }
+}
+
+tasks.register('dockerDown', Exec) {
+    group = 'docker'
+    description = 'Stops the Docker services (the database volume is kept).'
+    commandLine 'docker', 'compose', 'down'
+}
+
+tasks.register('dockerLogs', Exec) {
+    group = 'docker'
+    description = 'Shows the latest service logs.'
+    commandLine 'docker', 'compose', 'logs', '--tail', '100'
+}

@@ -1,0 +1,6 @@
+.switch { display: inline-flex; padding: 3px; gap: 2px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.option { padding: 7px 14px; border-radius: 7px; font-weight: 600; font-size: 13px; color: var(--color-text-muted); transition: background var(--transition), color var(--transition); }
+.option:hover:not(:disabled) { color: var(--color-text); }
+.NOT_STARTED { background: var(--color-surface-3); color: var(--color-text); }
+.IN_PROGRESS { background: var(--color-info-soft); color: var(--color-info); }
+.COMPLETED { background: var(--color-accent-soft); color: var(--color-accent); }

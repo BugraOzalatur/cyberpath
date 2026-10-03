@@ -1,0 +1,11 @@
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+.eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--color-accent); margin-bottom: var(--space-1); }
+.subtitle { color: var(--color-text-muted); margin-top: var(--space-1); max-width: 640px; }
+.actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }

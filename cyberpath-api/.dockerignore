@@ -1,0 +1,4 @@
+# Only the jar produced by Gradle goes into the build context (no .git/, sources, .env, ...)
+*
+!build/libs/cyberpath-api.jar
+.git/

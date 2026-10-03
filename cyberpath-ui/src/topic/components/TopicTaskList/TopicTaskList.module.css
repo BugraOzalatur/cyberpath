@@ -1,0 +1,10 @@
+.wrapper { display: flex; flex-direction: column; gap: var(--space-4); }
+.list { display: flex; flex-direction: column; gap: var(--space-2); }
+.item { display: flex; align-items: center; gap: var(--space-3); padding: 10px var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); }
+.check { width: 18px; height: 18px; accent-color: var(--color-accent); flex-shrink: 0; }
+.title { flex: 1; min-width: 0; }
+.done .title { color: var(--color-text-faint); text-decoration: line-through; }
+.due { font-family: var(--font-mono); font-size: 12px; color: var(--color-text-muted); }
+.overdue { color: var(--color-danger); }
+.form { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: flex-end; padding-top: var(--space-3); border-top: 1px dashed var(--color-border); }
+.grow { flex: 1 1 220px; }

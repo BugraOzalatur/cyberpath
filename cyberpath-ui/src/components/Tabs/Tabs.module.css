@@ -1,0 +1,5 @@
+.tabs { display: inline-flex; gap: 2px; padding: 3px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); flex-wrap: wrap; }
+.tab { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 7px; color: var(--color-text-muted); font-weight: 600; font-size: 13px; transition: background var(--transition), color var(--transition); }
+.tab:hover { color: var(--color-text); }
+.active { background: var(--color-surface-3); color: var(--color-text); }
+.count { font-family: var(--font-mono); font-size: 11px; background: var(--color-bg); color: var(--color-text-muted); padding: 0 6px; border-radius: var(--radius-pill); }

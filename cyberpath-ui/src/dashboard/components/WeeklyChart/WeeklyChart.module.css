@@ -1,0 +1,7 @@
+.chart { display: grid; grid-template-columns: repeat(8, 1fr); gap: var(--space-2); height: 190px; align-items: end; }
+.column { display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; min-width: 0; }
+.value { font-family: var(--font-mono); font-size: 11px; color: var(--color-text-muted); height: 14px; }
+.barTrack { flex: 1; width: 100%; max-width: 34px; display: flex; align-items: flex-end; background: var(--color-surface-2); border-radius: 6px; overflow: hidden; }
+.bar { width: 100%; background: linear-gradient(180deg, rgba(90, 169, 255, 0.85), rgba(90, 169, 255, 0.35)); border-radius: 6px 6px 0 0; transition: height 500ms ease; }
+.barCurrent { width: 100%; background: linear-gradient(180deg, var(--color-accent), rgba(46, 230, 166, 0.35)); border-radius: 6px 6px 0 0; box-shadow: 0 0 14px rgba(46, 230, 166, 0.35); transition: height 500ms ease; }
+.label { font-size: 10.5px; color: var(--color-text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }

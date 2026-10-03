@@ -1,0 +1,28 @@
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.chip { display: inline-flex; align-items: center; gap: var(--space-2); padding: 8px 14px; border-radius: var(--radius-pill); border: 1px solid var(--color-border-strong); background: var(--color-bg); font-weight: 500; transition: all var(--transition); }
+.chip:hover { border-color: var(--color-text-faint); }
+.chipActive { border-color: var(--color-accent); background: var(--color-accent-soft); color: var(--color-accent); }
+.chipCount { font-family: var(--font-mono); font-size: 11px; color: var(--color-text-faint); }
+.hint { font-size: 12px; color: var(--color-text-faint); }
+.spaced { margin-top: var(--space-4); }
+.startRow { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-3); margin-top: var(--space-5); }
+.error { color: var(--color-danger); font-size: 13px; }
+.examHeader { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-5); }
+.counter { font-family: var(--font-mono); font-weight: 600; color: var(--color-accent); white-space: nowrap; }
+.examProgress { flex: 1; }
+.next { display: flex; justify-content: flex-end; margin-top: var(--space-4); }
+.resultCard { background: radial-gradient(600px 240px at 0% 0%, rgba(46, 230, 166, 0.1), transparent 70%), var(--color-surface); }
+.result { display: flex; align-items: center; gap: var(--space-8); flex-wrap: wrap; }
+.resultText { display: flex; flex-direction: column; gap: var(--space-2); }
+.verdict { font-size: 22px; }
+.muted { color: var(--color-text-muted); }
+.resultActions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-2); }
+.reviewTitle { margin: var(--space-6) 0 var(--space-3); }
+.review { display: flex; flex-direction: column; gap: var(--space-2); }
+.reviewItem { display: flex; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); }
+.mark { font-weight: 700; width: 20px; flex-shrink: 0; }
+.ok .mark { color: var(--color-accent); }
+.bad { border-color: rgba(255, 93, 115, 0.3); }
+.bad .mark { color: var(--color-danger); }
+.reviewPrompt { font-weight: 500; }
+.explanation { font-size: 13px; color: var(--color-text-faint); margin-top: 4px; }

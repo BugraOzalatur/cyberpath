@@ -1,0 +1,19 @@
+.tile {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.top { display: flex; justify-content: space-between; align-items: center; }
+.label { color: var(--color-text-muted); font-size: 12.5px; font-weight: 500; }
+.icon { width: 30px; height: 30px; border-radius: var(--radius-md); display: grid; place-items: center; font-size: 15px; }
+.accent { background: var(--color-accent-soft); color: var(--color-accent); }
+.info { background: var(--color-info-soft); color: var(--color-info); }
+.warn { background: var(--color-warn-soft); color: var(--color-warn); }
+.violet { background: var(--color-violet-soft); color: var(--color-violet); }
+.value { font-size: 26px; font-weight: 700; font-family: var(--font-mono); letter-spacing: -0.02em; }
+.hint { font-size: 12px; color: var(--color-text-faint); }

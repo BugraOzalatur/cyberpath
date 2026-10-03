@@ -1,0 +1,27 @@
+.back { display: inline-block; color: var(--color-text-muted); font-size: 13px; margin-bottom: var(--space-4); }
+.back:hover { color: var(--color-accent); }
+.header { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-5); }
+.titleBlock { display: flex; flex-direction: column; gap: var(--space-2); max-width: 720px; }
+.badges { display: flex; align-items: center; gap: var(--space-2); }
+.order { font-family: var(--font-mono); font-size: 12px; color: var(--color-text-faint); }
+.summary { color: var(--color-text-muted); }
+.warning { border: 1px solid rgba(255, 181, 71, 0.35); background: var(--color-warn-soft); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-5); }
+.warning strong { color: var(--color-warn); }
+.layout { display: grid; grid-template-columns: 1fr 320px; gap: var(--space-5); align-items: start; }
+.main { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.panel { min-width: 0; }
+.questions { display: flex; flex-direction: column; gap: var(--space-4); }
+.side { display: flex; flex-direction: column; gap: var(--space-4); position: sticky; top: var(--space-5); }
+.ringRow { display: flex; align-items: center; gap: var(--space-4); }
+.stats { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.stats li { display: flex; justify-content: space-between; color: var(--color-text-muted); }
+.stats strong { font-family: var(--font-mono); color: var(--color-text); }
+.claude { background: radial-gradient(400px 160px at 100% 0%, rgba(167, 139, 250, 0.12), transparent 70%), var(--color-surface); }
+.claude > div { display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start; }
+.kicker { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-violet); }
+.tips { display: flex; flex-direction: column; gap: var(--space-2); font-size: 12.5px; }
+
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 1fr; }
+  .side { position: static; }
+}

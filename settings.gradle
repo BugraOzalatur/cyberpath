@@ -1,0 +1,3 @@
+rootProject.name = 'cyberpath'
+
+include 'cyberpath-api', 'cyberpath-ui', 'cyberpath-mcp'

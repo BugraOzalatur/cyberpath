@@ -1,0 +1,4 @@
+.wrapper { display: flex; flex-direction: column; gap: var(--space-3); }
+.editor { min-height: 320px; font-family: var(--font-mono); font-size: 13px; }
+.actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); }
+.status { font-size: 12px; color: var(--color-text-faint); margin-right: auto; }

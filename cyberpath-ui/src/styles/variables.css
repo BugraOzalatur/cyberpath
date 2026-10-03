@@ -1,0 +1,45 @@
+:root {
+  --color-bg: #070b12;
+  --color-surface: #0d1320;
+  --color-surface-2: #131b2c;
+  --color-surface-3: #1a2438;
+  --color-border: #1f2a40;
+  --color-border-strong: #2c3a56;
+  --color-text: #e6edf7;
+  --color-text-muted: #8b98b0;
+  --color-text-faint: #5b6782;
+
+  --color-accent: #2ee6a6;
+  --color-accent-strong: #19c98c;
+  --color-accent-soft: rgba(46, 230, 166, 0.12);
+  --color-info: #5aa9ff;
+  --color-info-soft: rgba(90, 169, 255, 0.12);
+  --color-warn: #ffb547;
+  --color-warn-soft: rgba(255, 181, 71, 0.12);
+  --color-danger: #ff5d73;
+  --color-danger-soft: rgba(255, 93, 115, 0.12);
+  --color-violet: #a78bfa;
+  --color-violet-soft: rgba(167, 139, 250, 0.12);
+
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 8px 24px rgba(0, 0, 0, 0.35);
+  --glow-accent: 0 0 0 1px rgba(46, 230, 166, 0.35), 0 0 24px rgba(46, 230, 166, 0.15);
+
+  --sidebar-width: 240px;
+  --transition: 150ms ease;
+}
