@@ -1,0 +1,31 @@
+[Unit]
+Description=CyberPath learning tracker (API and web UI)
+After=network-online.target postgresql.service
+Wants=network-online.target postgresql.service
+
+[Service]
+Type=simple
+User=cyberpath
+Group=cyberpath
+WorkingDirectory=/opt/cyberpath/server
+Environment="JAVA_OPTS=-Xms128m -Xmx512m"
+ExecStart=/opt/cyberpath/bin/server.sh
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=10
+
+# Hardening: the service only reads its install directory and talks to the database over the network
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

@@ -2,11 +2,13 @@ plugins {
     id 'base'
 }
 
-def pnpm = providers.gradleProperty('pnpmPath').getOrElse('pnpm')
+def pnpm = rootProject.ext.pnpm
+def pathEnv = rootProject.ext.pnpmPathEnv
 
 def pnpmInstall = tasks.register('pnpmInstall', Exec) {
     group = 'build'
     description = 'Installs dependencies from the lockfile.'
+    environment 'PATH', pathEnv
     commandLine pnpm, 'install', '--frozen-lockfile'
     inputs.files 'package.json', 'pnpm-lock.yaml'
     outputs.dir 'node_modules'
@@ -16,6 +18,7 @@ def tsc = tasks.register('tsc', Exec) {
     group = 'build'
     description = 'Compiles the MCP server into dist/ (this is what the MCP client runs).'
     dependsOn pnpmInstall
+    environment 'PATH', pathEnv
     commandLine pnpm, 'run', 'build'
     inputs.dir 'src'
     inputs.files 'tsconfig.json', 'package.json', 'pnpm-lock.yaml'

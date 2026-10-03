@@ -1,5 +1,0 @@
-# Only the built bundle and the nginx config go into the build context
-*
-!dist/
-!nginx.conf
-.git/

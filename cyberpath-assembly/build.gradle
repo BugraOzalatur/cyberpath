@@ -1,0 +1,228 @@
+// cyberpath-assembly: build orchestration only (no plugins, no sources).
+// Packages the React UI into the Spring Boot jar, builds the Docker image and produces distributions.
+//
+//   ./gradlew clean dockerBuild -x test   build everything, create the image and start the local stack (server + PostgreSQL)
+//   ./gradlew dockerImages                only build the Docker image
+//   ./gradlew dockerDown | dockerLogs     stop the local stack (data is kept) | show its logs
+//   ./gradlew buildDistributions          zip + tar.gz with the jar, config, start scripts and systemd/WinSW services
+//   ./gradlew buildDockerDist             tar.gz with the saved image, docker-compose, config and load scripts
+
+evaluationDependsOn(':cyberpath-api')
+evaluationDependsOn(':cyberpath-ui')
+
+def api = project(':cyberpath-api')
+def ui = project(':cyberpath-ui')
+def appVersion = rootProject.version.toString()
+def docker = rootProject.ext.docker
+def dockerPathEnv = rootProject.ext.dockerPathEnv
+def serverImage = 'cyberpath/server'
+def serverJar = api.layout.buildDirectory.dir('libs')
+
+tasks.register('clean', Delete) {
+    group = 'build'
+    description = 'Deletes the assembly build directory.'
+    delete layout.buildDirectory
+}
+
+// ====================================================================================================
+// 1. UI integration: the built React app becomes static resources of the server jar
+// ====================================================================================================
+
+def copyUiToServer = tasks.register('copyUiToServer', Copy) {
+    group = 'build'
+    description = 'Copies the built React UI into the server jar (classpath:/static).'
+    dependsOn ':cyberpath-ui:pnpmBuild'
+    mustRunAfter ':cyberpath-api:processResources'
+    from ui.layout.projectDirectory.dir('dist')
+    into api.layout.buildDirectory.dir('resources/main/static')
+}
+
+['bootJar', 'resolveMainClassName', 'jar'].each { name ->
+    api.tasks.named(name) { dependsOn copyUiToServer }
+}
+
+// ====================================================================================================
+// 2. Docker images
+// ====================================================================================================
+
+def dockerBuildServer = tasks.register('dockerBuildServer', Exec) {
+    group = 'docker'
+    description = "Builds the ${serverImage} image (API + UI) from the server jar."
+    dependsOn ':cyberpath-api:bootJar'
+    environment 'PATH', dockerPathEnv
+    commandLine docker, 'build',
+            '-f', file('docker/server/Dockerfile').path,
+            '-t', "${serverImage}:latest", '-t', "${serverImage}:${appVersion}",
+            serverJar.get().asFile.path
+}
+
+def dockerImages = tasks.register('dockerImages') {
+    group = 'docker'
+    description = 'Builds all Docker images.'
+    dependsOn dockerBuildServer
+}
+
+def composeFile = file('docker/docker-compose.yml').path
+def composeCommand = { List<String> args ->
+    // The repository root is the project directory, so compose reads the root .env and keeps the project name "cyberpath"
+    [docker, 'compose', '--project-directory', rootProject.projectDir.path, '-f', composeFile] + args
+}
+
+tasks.register('dockerBuild', Exec) {
+    group = 'docker'
+    description = 'Builds and tests all modules, creates the image and starts the local stack, waiting until it is healthy.'
+    dependsOn dockerImages, ':cyberpath-api:build', ':cyberpath-ui:build', ':cyberpath-mcp:build'
+    environment 'PATH', dockerPathEnv
+    commandLine composeCommand(['up', '-d', '--wait', '--remove-orphans'])
+    def envFile = rootProject.file('.env')
+    doFirst {
+        if (!envFile.exists()) {
+            throw new GradleException('Missing .env file. Run "cp .env.example .env" and set DB_PASSWORD.')
+        }
+    }
+    doLast {
+        logger.lifecycle('CyberPath is ready → http://127.0.0.1:5180  (API: http://127.0.0.1:5180/api)')
+    }
+}
+
+tasks.register('dockerDown', Exec) {
+    group = 'docker'
+    description = 'Stops the local stack (the database volume is kept).'
+    environment 'PATH', dockerPathEnv
+    commandLine composeCommand(['down'])
+}
+
+tasks.register('dockerLogs', Exec) {
+    group = 'docker'
+    description = 'Shows the latest logs of the local stack.'
+    environment 'PATH', dockerPathEnv
+    commandLine composeCommand(['logs', '--tail', '100'])
+}
+
+// ====================================================================================================
+// 3. Service distribution (bare metal: Linux systemd / Windows WinSW, external PostgreSQL)
+// ====================================================================================================
+
+def distName = "cyberpath-${appVersion}"
+def distStaging = layout.buildDirectory.dir("dist-staged/${distName}")
+
+def stageFullstackDist = tasks.register('stageFullstackDist', Copy) {
+    group = 'distribution'
+    description = 'Stages the jar, configuration, start scripts and service definitions.'
+    dependsOn ':cyberpath-api:bootJar'
+    into distStaging
+    from(serverJar) {
+        include '*.jar'
+        exclude '*-plain.jar'
+        into 'server'
+    }
+    from('dist/server') { into 'server' }
+    from('dist/bin') { into 'bin' }
+    from('dist/service') { into 'service' }
+    from('dist') { include 'install-service.*', 'uninstall-service.*' }
+}
+
+def setDistPermissions = tasks.register('setDistPermissions') {
+    group = 'distribution'
+    description = 'Makes the staged shell scripts executable.'
+    dependsOn stageFullstackDist
+    def staged = distStaging
+    doLast {
+        fileTree(staged) { include '**/*.sh' }.each { it.setExecutable(true, false) }
+    }
+}
+
+def distZip = tasks.register('distZip', Zip) {
+    group = 'distribution'
+    description = "Creates ${distName}.zip."
+    dependsOn setDistPermissions
+    archiveFileName = "${distName}.zip"
+    destinationDirectory = layout.buildDirectory.dir('distributions')
+    zip64 = true
+    entryCompression = ZipEntryCompression.DEFLATED
+    from(distStaging) {
+        into distName
+        filesMatching('**/*.sh') { permissions { unix('rwxr-xr-x') } }
+    }
+}
+
+def distTar = tasks.register('distTar', Tar) {
+    group = 'distribution'
+    description = "Creates ${distName}.tar.gz."
+    dependsOn setDistPermissions
+    archiveFileName = "${distName}.tar.gz"
+    destinationDirectory = layout.buildDirectory.dir('distributions')
+    compression = Compression.GZIP
+    from(distStaging) {
+        into distName
+        filesMatching('**/*.sh') { permissions { unix('rwxr-xr-x') } }
+    }
+}
+
+tasks.register('buildDistributions') {
+    group = 'distribution'
+    description = 'Builds the zip and tar.gz service distributions.'
+    dependsOn distZip, distTar
+}
+
+// ====================================================================================================
+// 4. Docker distribution (saved image + compose, for machines without the source code)
+// ====================================================================================================
+
+def dockerDistName = "cyberpath-docker-${appVersion}"
+def dockerDistStaging = layout.buildDirectory.dir("docker-dist-staged/${dockerDistName}")
+def imagesDir = layout.buildDirectory.dir('docker-images')
+
+def dockerSaveServer = tasks.register('dockerSaveServer', Exec) {
+    group = 'docker'
+    description = "Saves ${serverImage}:${appVersion} to a tar file."
+    dependsOn dockerBuildServer
+    def target = imagesDir.get().file('cyberpath-server.tar').asFile
+    doFirst { target.parentFile.mkdirs() }
+    environment 'PATH', dockerPathEnv
+    commandLine docker, 'save', '-o', target.path, "${serverImage}:${appVersion}"
+}
+
+def stageDockerDist = tasks.register('stageDockerDist', Copy) {
+    group = 'distribution'
+    description = 'Stages the saved image, docker-compose, configuration and load scripts.'
+    dependsOn dockerSaveServer
+    into dockerDistStaging
+    from(imagesDir) { into 'images' }
+    from('dist/docker') {
+        exclude 'docker-compose.yml'
+    }
+    from('dist/docker') {
+        include 'docker-compose.yml'
+        filter { String line -> line.replace('@VERSION@', appVersion) }
+    }
+}
+
+def setDockerDistPermissions = tasks.register('setDockerDistPermissions') {
+    group = 'distribution'
+    description = 'Makes the staged shell scripts executable.'
+    dependsOn stageDockerDist
+    def staged = dockerDistStaging
+    doLast {
+        fileTree(staged) { include '**/*.sh' }.each { it.setExecutable(true, false) }
+    }
+}
+
+def dockerDistTar = tasks.register('dockerDistTar', Tar) {
+    group = 'distribution'
+    description = "Creates ${dockerDistName}.tar.gz."
+    dependsOn setDockerDistPermissions
+    archiveFileName = "${dockerDistName}.tar.gz"
+    destinationDirectory = layout.buildDirectory.dir('distributions')
+    compression = Compression.GZIP
+    from(dockerDistStaging) {
+        into dockerDistName
+        filesMatching('**/*.sh') { permissions { unix('rwxr-xr-x') } }
+    }
+}
+
+tasks.register('buildDockerDist') {
+    group = 'distribution'
+    description = 'Builds the Docker distribution archive.'
+    dependsOn dockerDistTar
+}

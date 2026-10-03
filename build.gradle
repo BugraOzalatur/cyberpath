@@ -1,32 +1,23 @@
-// Root project: builds cyberpath-api (Spring Boot), cyberpath-ui (React/Vite) and cyberpath-mcp (MCP server).
+// Root project: cyberpath-api (Spring Boot), cyberpath-ui (React/Vite), cyberpath-mcp (MCP server)
+// and cyberpath-assembly (packaging: UI-in-jar, Docker image, distributions). See cyberpath-assembly/build.gradle.
 //   ./gradlew build                     → build all modules + tests/lint
-//   ./gradlew clean dockerBuild -x test → build, create Docker images, start the services
-//   ./gradlew dockerDown                → stop the services (data is kept)
+//   ./gradlew clean dockerBuild -x test → build, create the Docker image, start the local stack
 
-tasks.register('dockerBuild', Exec) {
-    group = 'docker'
-    description = 'Builds all modules, creates the Docker images and starts the services, waiting until they are healthy.'
-    dependsOn ':cyberpath-api:build', ':cyberpath-ui:build', ':cyberpath-mcp:build'
-    commandLine 'docker', 'compose', 'up', '-d', '--build', '--wait'
-    def envFile = file('.env')
-    doFirst {
-        if (!envFile.exists()) {
-            throw new GradleException('Missing .env file. Run "cp .env.example .env" and set DB_PASSWORD.')
-        }
-    }
-    doLast {
-        logger.lifecycle('CyberPath is ready → UI: http://127.0.0.1:5180  API: http://127.0.0.1:8095/api')
-    }
+// Tools are resolved to absolute paths: Gradle daemons started from an IDE often run with a minimal PATH
+// (e.g. without /opt/homebrew/bin). Override pnpm with -PpnpmPath=/path/to/pnpm.
+def home = System.getProperty('user.home')
+def systemPath = (System.getenv('PATH') ?: '').split(File.pathSeparator).toList()
+def findTool = { String name, List<String> extraDirs ->
+    (systemPath + extraDirs).collect { new File(it, name) }.find { it.canExecute() } ?: new File(name)
 }
 
-tasks.register('dockerDown', Exec) {
-    group = 'docker'
-    description = 'Stops the Docker services (the database volume is kept).'
-    commandLine 'docker', 'compose', 'down'
-}
+def pnpmFile = providers.gradleProperty('pnpmPath').map { new File(it) }.getOrElse(
+        findTool('pnpm', ['/opt/homebrew/bin', '/usr/local/bin', "${home}/Library/pnpm", "${home}/.local/share/pnpm", "${home}/.volta/bin"]))
+def dockerFile = findTool('docker', ['/usr/local/bin', '/opt/homebrew/bin', '/Applications/Docker.app/Contents/Resources/bin'])
 
-tasks.register('dockerLogs', Exec) {
-    group = 'docker'
-    description = 'Shows the latest service logs.'
-    commandLine 'docker', 'compose', 'logs', '--tail', '100'
-}
+ext.pnpm = pnpmFile.path
+// pnpm's launcher needs `node`, which normally lives next to it
+ext.pnpmPathEnv = ([pnpmFile.parent] + systemPath).findAll { it }.join(File.pathSeparator)
+ext.docker = dockerFile.path
+// docker compose calls credential helpers that sit next to the docker binary
+ext.dockerPathEnv = ([dockerFile.parent] + systemPath).findAll { it }.join(File.pathSeparator)

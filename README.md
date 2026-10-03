@@ -7,8 +7,9 @@ A personal learning tracker for cybersecurity: roadmap, study resources, tasks, 
 | `cyberpath-api` | Java 21 (Corretto), Spring Boot 4.1, JPA, Flyway, PostgreSQL 17 |
 | `cyberpath-ui` | React 19, Vite, TypeScript, TanStack Query, React Router, CSS Modules (pnpm) |
 | `cyberpath-mcp` | TypeScript, `@modelcontextprotocol/sdk` (stdio) |
+| `cyberpath-assembly` | Packaging only (no sources): embeds the UI into the server jar, builds the Docker image and the distributions |
 
-The whole project is a multi-module Gradle build (Groovy DSL).
+The whole project is a multi-module Gradle build (Groovy DSL). The UI is bundled into the Spring Boot jar, so the API and the web app ship as **one server** (`cyberpath/server` image) next to PostgreSQL.
 
 ## Getting started
 
@@ -16,35 +17,55 @@ Requirements: Java 21, pnpm, Docker. Gradle comes with the wrapper.
 
 ```bash
 cp .env.example .env                  # then set DB_PASSWORD (e.g. openssl rand -base64 24)
-./gradlew clean dockerBuild -x test   # build → create Docker images → start the services
+./gradlew clean dockerBuild -x test   # build → embed UI → build the image → start server + PostgreSQL
 ```
 
-All configuration lives in `.env`, which is git-ignored. Only `.env.example` (without real values) is committed. `cyberpath-api` reads `.env` automatically when it runs outside Docker; inside Docker, compose passes the values as environment variables.
-
-- UI: http://127.0.0.1:5180
-- API: http://127.0.0.1:8095/api
+- Web app and API: http://127.0.0.1:5180 (API under `/api`)
 - PostgreSQL: `127.0.0.1:5434` (credentials from `.env`)
 
 | Command | What it does |
 |---|---|
 | `./gradlew build` | Builds `cyberpath-api` (jar + tests), `cyberpath-ui` (type check, lint, `dist/`) and `cyberpath-mcp` (`dist/`) |
-| `./gradlew dockerBuild` | `build` + `docker compose up -d --build --wait`; finishes when all services are healthy |
-| `./gradlew dockerDown` | Stops the services (data is kept) |
-| `./gradlew dockerLogs` | Last 100 log lines |
+| `./gradlew dockerBuild` | `build` + Docker image + `docker compose up -d --wait`; finishes when everything is healthy |
+| `./gradlew dockerImages` | Only builds the `cyberpath/server` image |
+| `./gradlew dockerDown` / `dockerLogs` | Stops the local stack (data is kept) / shows its logs |
+| `./gradlew buildDistributions` | `cyberpath-assembly/build/distributions/cyberpath-<version>.zip` and `.tar.gz` (see below) |
+| `./gradlew buildDockerDist` | `cyberpath-assembly/build/distributions/cyberpath-docker-<version>.tar.gz` (see below) |
 | `./gradlew :cyberpath-api:test` | API tests only |
 
-If pnpm is not on the `PATH`, pass it explicitly: `./gradlew dockerBuild -PpnpmPath=/opt/homebrew/bin/pnpm`
+If pnpm is not found (e.g. when Gradle runs from an IDE), pass it explicitly: `./gradlew dockerBuild -PpnpmPath=/opt/homebrew/bin/pnpm`
 
-All ports are bound to `127.0.0.1`. To reset everything including the database, run `docker compose down -v`.
-
-> The Docker images do not compile anything themselves; they copy the Gradle outputs (`cyberpath-api/build/libs/cyberpath-api.jar` and `cyberpath-ui/dist/`). Always build the images with `./gradlew dockerBuild`, not with `docker compose build`.
+All ports are bound to `127.0.0.1`. To reset everything including the database: `docker compose --project-directory . -f cyberpath-assembly/docker/docker-compose.yml down -v`.
 
 ### Development mode (hot reload)
 ```bash
-docker compose up -d cyberpath-db       # uses .env
+docker compose --project-directory . -f cyberpath-assembly/docker/docker-compose.yml up -d cyberpath-db
 ./gradlew :cyberpath-api:bootRun        # :8095
 cd cyberpath-ui && pnpm dev             # :5180, proxies /api to :8095
 ```
+
+## Distributions
+
+`cyberpath-assembly` produces two archives for running CyberPath on another machine without the source code. The version comes from `gradle.properties`.
+
+**Docker distribution** (`cyberpath-docker-<version>.tar.gz`): the saved server image, a `docker-compose.yml` with PostgreSQL, the server configuration and load scripts.
+
+```bash
+tar -xzf cyberpath-docker-0.1.0.tar.gz && cd cyberpath-docker-0.1.0
+./load-images.sh                 # or load-images.bat
+cp .env.example .env             # set DB_PASSWORD
+docker compose up -d             # → http://127.0.0.1:5180
+```
+
+**Service distribution** (`cyberpath-<version>.zip` / `.tar.gz`): the server jar, `server/application.properties`, start scripts (`bin/server.sh`, `bin/server.bat`) and service definitions for systemd (Linux) and WinSW (Windows). It needs Java 21 and an existing PostgreSQL database.
+
+```bash
+sudo ./install-service.sh        # installs to /opt/cyberpath as a hardened systemd service
+# create the database, set the password in /opt/cyberpath/server/application.properties, then:
+sudo systemctl enable --now cyberpath-server   # → http://127.0.0.1:8095
+```
+
+On Windows, run `install-service.bat` as Administrator (installs to `C:\cyberpath` with WinSW).
 
 ## MCP server
 
@@ -56,7 +77,7 @@ cd cyberpath-ui && pnpm dev             # :5180, proxies /api to :8095
     "cyberpath": {
       "command": "node",
       "args": ["/absolute/path/to/cyberpath/cyberpath-mcp/dist/index.js"],
-      "env": { "TRACKER_API_URL": "http://127.0.0.1:8095/api" }
+      "env": { "TRACKER_API_URL": "http://127.0.0.1:5180/api" }
     }
   }
 }

@@ -1,7 +1,9 @@
 # Build outputs
 .gradle/
 build/
-dist/
+# Frontend/MCP build output (cyberpath-assembly/dist holds distribution sources and IS tracked)
+/cyberpath-ui/dist/
+/cyberpath-mcp/dist/
 out/
 *.tsbuildinfo
 

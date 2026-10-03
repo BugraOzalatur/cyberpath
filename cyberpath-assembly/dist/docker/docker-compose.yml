@@ -1,0 +1,45 @@
+# CyberPath Docker distribution: the server image (API + UI) and PostgreSQL.
+#   1. ./load-images.sh            (or load-images.bat)
+#   2. cp .env.example .env        and set DB_PASSWORD
+#   3. docker compose up -d        →  http://127.0.0.1:5180
+
+name: cyberpath
+
+services:
+  cyberpath-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: cyberpath
+      POSTGRES_USER: cyberpath
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    volumes:
+      - cyberpath-db:/var/lib/postgresql/data
+    networks: [cyberpath]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cyberpath -d cyberpath"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  cyberpath-server:
+    image: cyberpath/server:@VERSION@
+    environment:
+      # Referenced from server/application.properties as ${DB_PASSWORD}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    volumes:
+      - ./server/application.properties:/app/config/application.properties:ro
+    ports:
+      - "127.0.0.1:${CYBERPATH_PORT:-5180}:8095"
+    networks: [cyberpath]
+    depends_on:
+      cyberpath-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  cyberpath:
+    driver: bridge
+
+volumes:
+  cyberpath-db:

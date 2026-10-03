@@ -1,0 +1,4 @@
+# Applies to docker/server/Dockerfile. The build context is cyberpath-api/build/libs; only the jar is needed.
+*
+!cyberpath-api.jar
+.git/

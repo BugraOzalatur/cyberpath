@@ -1,0 +1,19 @@
+<service>
+  <id>cyberpath-server</id>
+  <name>CyberPath Server</name>
+  <description>CyberPath learning tracker (API and web UI).</description>
+
+  <env name="JAVA_OPTS" value="-Xms128m -Xmx512m"/>
+  <executable>java</executable>
+  <arguments>%JAVA_OPTS% -jar "%BASE%\..\..\server\cyberpath-api.jar"</arguments>
+  <workingdirectory>%BASE%\..\..\server</workingdirectory>
+
+  <!-- Uncomment and adjust to wait for a local PostgreSQL service:
+  <depend>postgresql-x64-17</depend>
+  -->
+
+  <startmode>Automatic</startmode>
+  <delayedAutoStart>true</delayedAutoStart>
+  <onfailure action="restart" delay="10 sec"/>
+  <log mode="rotate"/>
+</service>

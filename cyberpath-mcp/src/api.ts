@@ -1,4 +1,4 @@
-const BASE_URL = (process.env.TRACKER_API_URL ?? 'http://127.0.0.1:8095/api').replace(/\/$/, '')
+const BASE_URL = (process.env.TRACKER_API_URL ?? 'http://127.0.0.1:5180/api').replace(/\/$/, '')
 
 export class ApiError extends Error {}
 
