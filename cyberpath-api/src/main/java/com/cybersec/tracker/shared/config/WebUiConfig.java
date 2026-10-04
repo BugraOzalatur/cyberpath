@@ -32,6 +32,9 @@ public class WebUiConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/**")
                 .addResourceLocations(STATIC)
                 .setCacheControl(CacheControl.noCache())
+                // Jar entries have a fixed timestamp (reproducible builds), so Last-Modified would answer 304 for a
+                // new index.html after an upgrade; without it the browser always revalidates with a full response
+                .setUseLastModified(false)
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver() {
                     @Override
